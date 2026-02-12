@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatterInstruct: Bridging the Gap in Instruction-Following TTS</title>
+    <style>
+        body {
+            font-family: Georgia, serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #111;
+            margin-top: 1.5em;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 0.5em;
+        }
+        .abstract {
+            font-style: italic;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-left: 5px solid #ddd;
+            margin-bottom: 30px;
+        }
+        .architecture-img {
+            display: block;
+            max-width: 100%;
+            margin: 20px auto;
+            border: 1px solid #eee;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .ours {
+            font-weight: bold;
+            background-color: #e6f3ff !important;
+        }
+        .sample {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .instruction {
+            font-weight: bold;
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 5px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.82em;
+            flex: 1;
+        }
+        .text-content {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .audio-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .audio-col {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .audio-col label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        audio {
+            width: 100%;
+            height: 40px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #888;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ChatterInstruct: Bridging the Gap in Instruction-Following TTS via Disentangled Speaker-Style Representations</h1>
+
+        <div class="abstract">
+            <strong>Abstract:</strong> Open-source instruction-following TTS models lag behind proprietary systems on InstructTTSEval (38-50 vs. 68+). We trace this to parametric models failing on free-form tasks and unified models entangling identity with style. We propose ChatterInstruct, a modular framework disentangling Text-to-Speaker from Text-to-Style. A frozen Flan-T5 with Dual-Query attention extracts separate identity and style vectors. A conditional flow-matching mapper generates speaker latents from identity, while style is injected via AdaRMSNorm adapters into a frozen Llama backbone. ChatterInstruct achieves 70.5 on InstructTTSEval, surpassing GPT-4o-mini-TTS (68.5), while maintaining competitive zero-shot speaker similarity (0.788) on LibriTTS-R.
+        </div>
+
+        <h2>1. Architecture</h2>
+        <img src="images/InstructChatterbox.png" alt="ChatterInstruct Architecture" class="architecture-img">
+        <p style="text-align: center; color: #666; font-size: 0.9em;">Figure 1: ChatterInstruct architecture with Dual-Query Encoder, Flow Matching Mapper, and AdaRMSNorm adapters.</p>
+
+        <h2>2. Results</h2>
+
+        <h3>2.1. Instruction-Following (InstructTTSEval)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">TTS</th>
+                    <th>APS</th>
+                    <th>DSD</th>
+                    <th>RP</th>
+                    <th>Avg.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Closed-sourced Section -->
+                <tr>
+                    <td colspan="5" style="background-color: #eef6fc; font-style: italic; font-weight: bold; text-align: left; padding-left: 20px;">Closed-sourced</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">gemini-flash*</td>
+                    <td>92.3</td>
+                    <td>93.8</td>
+                    <td>80.1</td>
+                    <td>88.7</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">gemini-pro*</td>
+                    <td>87.6</td>
+                    <td>86.0</td>
+                    <td>67.2</td>
+                    <td>80.3</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">gpt-4o-mini-tts</td>
+                    <td>76.4</td>
+                    <td>74.3</td>
+                    <td>54.8</td>
+                    <td>68.5</td>
+                </tr>
+
+                <!-- Open-sourced Section -->
+                <tr>
+                    <td colspan="5" style="background-color: #eef6fc; font-style: italic; font-weight: bold; text-align: left; padding-left: 20px;">Open-sourced</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">VoxInstruct</td>
+                    <td>54.9</td>
+                    <td>57.0</td>
+                    <td>39.3</td>
+                    <td>50.4</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Parler-TTS-mini</td>
+                    <td>63.4</td>
+                    <td>48.7</td>
+                    <td>28.6</td>
+                    <td>46.9</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Parler-TTS-large</td>
+                    <td>60.0</td>
+                    <td>45.9</td>
+                    <td>31.2</td>
+                    <td>45.7</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">PromptTTS</td>
+                    <td>64.3</td>
+                    <td>47.2</td>
+                    <td>31.4</td>
+                    <td>47.6</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">PromptStyle</td>
+                    <td>57.4</td>
+                    <td>46.4</td>
+                    <td>30.9</td>
+                    <td>38.2</td>
+                </tr>
+                <tr class="ours">
+                    <td style="text-align: left;">ChatterInstruct (Ours)</td>
+                    <td>75.4</td>
+                    <td>76.4</td>
+                    <td>59.6</td>
+                    <td>70.5</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <img src="images/new_task_img.png" alt="InstructTTSEval Results" class="architecture-img">
+
+        <h3>2.2. Zero-Shot Speaker Generation (LibriTTS-R)</h3>
+        <p>We evaluate zero-shot speaker generation on the LibriTTS-R test-clean subset. The results demonstrate ChatterInstruct's superiority in both speaker similarity and generation stability.</p>
+
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
+            <div style="flex: 1; min-width: 300px; text-align: center;">
+                <img src="images/secs_comparison.png" alt="SECS Comparison" class="architecture-img" style="margin: 0; max-height: 400px; object-fit: contain;">
+                <p style="margin-top: 10px; font-size: 0.9em; color: #555;"><strong>Figure 2a: Zero-Shot Speaker Similarity (SECS).</strong> ChatterInstruct achieves the highest SECS of <strong>0.7881</strong>, surpassing ParlerTTS (0.7416) and VoxInstruct (0.7172). This metric measures the cosine similarity between WavLM-Base-Plus embeddings of generated audio and ground-truth utterances, validating the Flow Matching Mapper's effectiveness in mapping disentangled identity cues to accurate speaker latents.</p>
+            </div>
+            <div style="flex: 1; min-width: 300px; text-align: center;">
+                <img src="images/consistency_comparison.png" alt="Consistency Comparison" class="architecture-img" style="margin: 0; max-height: 400px; object-fit: contain;">
+                <p style="margin-top: 10px; font-size: 0.9em; color: #555;"><strong>Figure 2b: Speaker Generation Stability.</strong> ChatterInstruct demonstrates superior intra-speaker consistency, reaching <strong>0.8937 ± 0.0385</strong>. This represents a <strong>41% reduction in standard deviation</strong> compared to ParlerTTS (0.8084 ± 0.0651), confirming robust zero-shot stability and consistent speaker identity across multiple generations without needing reference audio.</p>
+            </div>
+        </div>
+
+        <h2>3. Audio Samples</h2>
+        <p>ChatterInstruct generates speech from the same text under three InstructTTSEval tasks: Acoustic-Parameter Specification (APS), Descriptive-Style Directive (DSD), and Role-Play (RP).</p>
+
+        <!-- Sample 1: en_947 -->
+        <div class="sample">
+            <div class="text-content">"You can just do what I'm doing and pretend it's over. Like it's over between David and me done."</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Female. pitch: Relatively high female pitch. speed: Rapid delivery, particularly at the onset, slowing slightly for emphasis on the final word. volume: Conversational with a slight elevation, conveying assertiveness. age: Young adult. clarity: High clarity with distinct pronunciation. fluency: Fluent and smooth speech flow. accent: American English. texture: Bright and clear vocal texture. emotion: Exasperated and decisive. tone: Assertive and conclusive, with a touch of finality. personality: Expressive and resolute.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_947.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Speak with a resolute demeanor, combining an elevated pitch and clear pronunciation to emanate finality, while maintaining an expressive and bright vocal quality.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_947.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">In the debate room, the youthful debater hammers her closing argument with assertive clarity.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_947.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample 2: en_218 -->
+        <div class="sample">
+            <div class="text-content">"I'm sick of it. No plea. We're gonna win this thing, Beck. You, me, and Pugsley. We're a team. Now, come on. Let's go."</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Female. pitch: High female pitch, peaking with exasperation. speed: Rapid, clipped pace. volume: Forceful volume. age: Young adult. clarity: Clear articulation. fluency: Fluent delivery. accent: General American English. texture: Tense, sharp texture. emotion: Frustrated annoyance. tone: Exasperated tone. personality: Assertive, impatient.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_218.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Channel a forceful volume paired with fluent articulation, allowing the young adult female voice to carry an underlying impatience, tinged with a tense exasperation that peaks dramatically.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_218.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">Channel the impatience of a young entrepreneur pitching a bold idea, losing patience as others fail to understand.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_218.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample 3: en_289 -->
+        <div class="sample">
+            <div class="text-content">"Alright! Alright! Yes! That was great! She gets it! Now she knows what it's like to be a minority!"</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Male. pitch: High-pitched for a male voice, expressing strong excitement. speed: Rapid pace, especially at the beginning, maintaining quick delivery. volume: Loud and forceful throughout, bordering on shouting initially. age: Young Adult to Middle-Aged Adult. clarity: High clarity, words are distinct despite the speed and volume. fluency: Highly fluent, speech flows without interruption. accent: American English. texture: Bright and somewhat strained due to intensity. emotion: Intense excitement and triumph, possibly shifting to vindication. tone: Exuberant and celebratory, ending with a slightly knowing tone. personality: Extroverted, highly expressive, energetic.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_289.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Set the stage with a bright, somewhat strained texture, capturing the immense intensity and extroverted exuberance of the voice. As you proceed with rapidity, ensure the rhythm cascades with high fluency; the speech should flow uninterrupted, adopting a loud, forceful presence that borders on shouting in its initial moments.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_289.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">Craft the message with the smoothness of a spring breeze over a lake&mdash;high clarity, rapid pace, delivered with intense excitement, capturing the energy of young adults through triumphant jubilation.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_289.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample 4: en_866 -->
+        <div class="sample">
+            <div class="text-content">"So I was right. Oh, it's like a hot fudge Sunday from a soul."</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Female. pitch: High female pitch, rising with exclamatory emphasis on 'right!' and then becoming more varied with a slight downward melodic contour on 'soul'. speed: Initially quick and assertive, then transitions to a slower, more drawn-out pace with an almost sing-song rhythm. volume: Begins at a conversational to slightly elevated level with excitement, then softens slightly with a more expressive delivery. age: Young adult to adult. clarity: Clear and distinct pronunciation. fluency: Highly fluent, with a smooth and connected delivery. accent: General American English. texture: Bright and slightly sweet vocal quality. emotion: Starts with triumphant excitement, shifting to delighted and appreciative satisfaction. tone: Initially exclamatory and confident, then becomes more whimsical and pleased. personality: Expressive and enthusiastic.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_866.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Incorporate a youthful, enthusiastic female voice with a high pitch, emphasizing a confident exclamatory tone at the start; let it transform into a whimsical delight, ensuring clarity and distinctness throughout.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_866.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">Bring forth the energy of a lively friend sharing good news, starting with exuberant enthusiasm and settling into a warm, satisfied cadence.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_866.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample 5: en_101 -->
+        <div class="sample">
+            <div class="text-content">"My stomach is upset. It's where I keep my worry. My friend is in trouble and you are going to fix it because if you don't, I will rip you in half."</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Male. pitch: Low male pitch, rising sharply with anger. speed: Deliberate pace initially, accelerating with rising intensity. volume: Starts conversational, escalating quickly to shouting. age: Middle-aged adult. clarity: Highly distinct and articulate. fluency: Very fluent and controlled delivery. accent: Standard American English. texture: Deep and slightly gravelly, becoming strained under pressure. emotion: Transitions from expressed discomfort to intense anger and menace. tone: Shifts from complaining to overtly threatening and hostile. personality: Assertive, intense, easily provoked.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_101.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Incorporate a deep and slightly gravelly voice while ensuring each word is highly distinct when shifting from a complaining tone to overtly threatening as the mood intensifies.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_101.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">Channel the energy of an influential leader in a crisis, commanding attention with authority and escalating intensity.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_101.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample 6: en_299 -->
+        <div class="sample">
+            <div class="text-content">"Look, I want a lawyer, the Justice Department, somebody I can trust. I'm just trying to protect my family, okay? Not from your company, from the government."</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>APS</label>
+                    <div class="instruction">gender: Male. pitch: Relatively high-pitched for a male, conveying tension. speed: Fast-paced and urgent. volume: Loud and forceful. age: Young adult to middle-aged male. clarity: Clear articulation despite the speed. fluency: Fluent but rushed speech flow. accent: American English accent. texture: Strained vocal texture. emotion: Anxious and desperate. tone: Insistent and defensive tone. personality: Anxious and protective.</div>
+                    <audio controls src="audios/instructttseval_demo/aps/en_299.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>DSD</label>
+                    <div class="instruction">Convey the anxious emotions of a middle-aged American male using a strained vocal texture that underscores his fast-paced speech, while maintaining vigorous volume and clarity throughout to mirror his inner tension and protective instincts.</div>
+                    <audio controls src="audios/instructttseval_demo/dsd/en_299.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>RP</label>
+                    <div class="instruction">Feel like I'm an anxious young adult rushing to explain an important point with strained urgency, ensuring listeners remain engaged and attentive.</div>
+                    <audio controls src="audios/instructttseval_demo/rp/en_299.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <h2>4. Qualitative Analysis: Style Disentanglement</h2>
+        <p>To verify that the strong identity scores do not arise from diminished style control (e.g., posterior collapse), we conduct a focused case study on a representative speaker (Spk 2300). We keep the identity description fixed and vary only the style instruction.</p>
+
+        <h3>4.1. Style Instruction Variants</h3>
+        <p>Identity description ("thick, raspy edge") is held constant across conditions.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Style</th>
+                    <th>Instruction Fragment (Style Query)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Original</td>
+                    <td>"...kind, lively cadence... bright, cool, and slightly sweet..."</td>
+                </tr>
+                <tr>
+                    <td>Melancholic</td>
+                    <td>"...slow, melancholic cadence... gloomy, heavy, and slightly sorrowful."</td>
+                </tr>
+                <tr>
+                    <td>Aggressive</td>
+                    <td>"...sharp, aggressive cadence... fierce, loud, and slightly threatening."</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>4.2. Pairwise Speaker Encoder Cosine Similarity (SECS)</h3>
+        <p>Pairwise SECS for the case study (Spk 2300) across different style prompts.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Style</th>
+                    <th>Original</th>
+                    <th>Melan.</th>
+                    <th>Aggr.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Original</strong></td>
+                    <td>1.000</td>
+                    <td><strong>0.984</strong></td>
+                    <td><strong>0.946</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Melancholic</strong></td>
+                    <td>-</td>
+                    <td>1.000</td>
+                    <td><strong>0.959</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Aggressive</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>1.000</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>Identity invariance under style changes.</strong> When switching between the contrasting styles defined above, all pairwise SECS values remain high, with the lowest similarity being 0.946 (Original vs. Aggressive). This indicates that style perturbations do not induce noticeable identity drift, contrasting with prior prompt-to-speaker approaches where prompt incompleteness and entanglement can lead to substantially lower speaker similarity (often below 0.5).</p>
+
+        <p><strong>Prosodic differences induced by style injection.</strong> As shown in Figure 3, the Aggressive style exhibits higher pitch excursions (F0 peaks above 200 Hz) and stronger energy peaks, whereas the Melancholic style stays in a lower register (mostly below 150 Hz) with suppressed intensity. Interestingly, the Aggressive rendering is also slightly longer (~5.5 s vs. ~5.2 s), indicating that style control dynamically affects speaking rate and timing&mdash;such as introducing longer pauses or elongating emphasized syllables&mdash;while preserving the underlying linguistic rhythm.</p>
+
+        <img src="images/style_analysis.svg" alt="Prosodic analysis under two styles (Melancholic vs. Aggressive)" class="architecture-img">
+        <p style="text-align: center; color: #666; font-size: 0.9em;">Figure 3: Prosodic analysis under two styles (Melancholic vs. Aggressive): pitch and energy follow the style prompts while speaker identity remains stable.</p>
+
+        <h3>4.3. Audio Samples (Spk 2300)</h3>
+        <p><em>The first sample is the real human recording (Reference). The following three are generated by ChatterInstruct: the first attempts to reconstruct the original style ("Original"), while the other two modify the style ("Melancholic", "Aggressive") while preserving the speaker's identity.</em></p>
+        <div class="sample">
+            <div class="text-content">"we were using coal costing twelve dollars a ton and were paid for our light in currency worth fifty cents on the dollar"</div>
+            <div class="audio-row">
+                <div class="audio-col">
+                    <label>Reference (Real Human)</label>
+                    <div class="instruction">His voice is thick and tensed, yet he speaks with a kind, lively cadence. There's a slight hint of a raspy edge, but overall, his speech is bright, cool, and slightly sweet, making him sound slightly refreshing and slightly sexy.</div>
+                    <audio controls src="audios/style_disentanglement/original_gt.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>Generated: Original Style</label>
+                    <div class="instruction">His voice is thick and tensed, yet he speaks with a kind, lively cadence. There's a slight hint of a raspy edge, but overall, his speech is bright, cool, and slightly sweet, making him sound slightly refreshing and slightly sexy.</div>
+                    <audio controls src="audios/style_disentanglement/original.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>Generated: Melancholic</label>
+                    <div class="instruction">His voice is thick and has a raspy edge, but he speaks with a slow, melancholic cadence. His speech is gloomy, heavy, and slightly sorrowful.</div>
+                    <audio controls src="audios/style_disentanglement/melancholic.wav"></audio>
+                </div>
+                <div class="audio-col">
+                    <label>Generated: Aggressive</label>
+                    <div class="instruction">His voice is thick and has a raspy edge, and he speaks with a sharp, aggressive cadence. His speech is fierce, loud, and slightly threatening.</div>
+                    <audio controls src="audios/style_disentanglement/aggressive.wav"></audio>
+                </div>
+            </div>
+        </div>
+
+        <p>Overall, the case study supports effective style&ndash;identity disentanglement: the generated speech exhibits clear, prompt-consistent prosodic shifts while preserving speaker identity across markedly different styles.</p>
+
+        <footer>
+            <p>&copy; 2025 Anonymous Research. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
