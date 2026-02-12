@@ -119,7 +119,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>ChatterInstruct: Bridging the Gap in Instruction-Following TTS via Disentangled Speaker-Style Representations</h1>
+        <h1>ChatterInstruct: Natural Language Voice Design via Text‑to‑Speaker Latent Mapping and Speaker‑Style Disentanglement</h1>
 
         <div class="abstract">
             <strong>Abstract:</strong> Open-source instruction-following TTS models lag behind proprietary systems on InstructTTSEval (38-50 vs. 68+). We trace this to parametric models failing on free-form tasks and unified models entangling identity with style. We propose ChatterInstruct, a modular framework disentangling Text-to-Speaker from Text-to-Style. A frozen Flan-T5 with Dual-Query attention extracts separate identity and style vectors. A conditional flow-matching mapper generates speaker latents from identity, while style is injected via AdaRMSNorm adapters into a frozen Llama backbone. ChatterInstruct achieves 70.5 on InstructTTSEval, surpassing GPT-4o-mini-TTS (68.5), while maintaining competitive zero-shot speaker similarity (0.788) on LibriTTS-R.
