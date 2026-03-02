@@ -168,8 +168,8 @@
         <h3>2.1. Instruction-Following (InstructTTSEval)</h3>
         <p>Instruction-following scores on InstructTTSEval (EN) and perceptual evaluation. Baseline scores are from <a
                 href="https://arxiv.org/abs/2501.12352">Huang et al.</a> <strong>CP-SECS</strong>: cross-prompt identity
-            stability (N/A for proprietary systems). Metrics: <strong>WER</strong> (word error rate),
-            <strong>Q-MOS</strong> (naturalness), <strong>I-MOS</strong> (instruction-following).
+            stability (N/A for proprietary systems). Metrics: <strong>Q-MOS</strong> (naturalness),
+            <strong>I-MOS</strong> (instruction-following), <strong>WER</strong> (word error rate).
         </p>
         <table>
             <thead>
@@ -184,9 +184,9 @@
                     <th>RP</th>
                     <th>Avg.</th>
                     <th>CP-SECS &uarr;</th>
-                    <th>WER &darr;</th>
                     <th>Q-MOS &uarr;</th>
                     <th>I-MOS &uarr;</th>
+                    <th>WER &darr;</th>
                 </tr>
             </thead>
             <tbody>
@@ -232,9 +232,9 @@
                     <td>28.6</td>
                     <td>46.9</td>
                     <td>0.716 &pm; 0.119</td>
+                    <td>2.714 &pm; 0.128</td>
+                    <td>2.670 &pm; 0.134</td>
                     <td>11.1</td>
-                    <td>2.671 &pm; 0.146</td>
-                    <td>2.682 &pm; 0.156</td>
                 </tr>
                 <tr>
                     <td style="text-align: left;">VoxInstruct</td>
@@ -243,9 +243,9 @@
                     <td>39.3</td>
                     <td>50.4</td>
                     <td>0.740 &pm; 0.118</td>
+                    <td>3.260 &pm; 0.108</td>
+                    <td>3.159 &pm; 0.124</td>
                     <td>24.0</td>
-                    <td>3.297 &pm; 0.122</td>
-                    <td>3.124 &pm; 0.143</td>
                 </tr>
                 <tr class="ours">
                     <td style="text-align: left;">ChatterInstruct (Ours)</td>
@@ -254,9 +254,9 @@
                     <td><strong>59.6</strong></td>
                     <td><strong>70.5</strong></td>
                     <td><strong>0.852 &pm; 0.074</strong></td>
+                    <td><strong>3.686 &pm; 0.089</strong></td>
+                    <td><strong>3.407 &pm; 0.117</strong></td>
                     <td><strong>2.5</strong></td>
-                    <td><strong>3.647 &pm; 0.102</strong></td>
-                    <td><strong>3.331 &pm; 0.134</strong></td>
                 </tr>
             </tbody>
         </table>
