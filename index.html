@@ -153,8 +153,8 @@
             Flan-T5 encoder with Dual-Query attention pooling extracts separate identity and style vectors from a single
             instruction. A conditional flow-matching mapper generates speaker latents from the identity vector, while
             AdaRMSNorm adapters inject style into a frozen Llama backbone without disturbing speaker characteristics. A
-            two-stage training strategy enforces this separation by construction. ChatterInstruct surpasses robust
-            baselines including GPT-4o-mini-TTS on InstructTTSEval, while attaining competitive zero-shot speaker
+            two-stage training strategy enforces this separation by construction. ChatterInstruct surpasses strong
+            baselines including GPT-4o-mini-TTS on InstructTTSEval, while attaining strong zero-shot speaker
             similarity on LibriTTS-R.
         </div>
 
@@ -226,14 +226,47 @@
                         Open-sourced</td>
                 </tr>
                 <tr>
+                    <td style="text-align: left;">PromptTTS</td>
+                    <td>64.3</td>
+                    <td>47.2</td>
+                    <td>31.4</td>
+                    <td>47.6</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">PromptStyle</td>
+                    <td>57.4</td>
+                    <td>46.4</td>
+                    <td>30.9</td>
+                    <td>44.9</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Parler-TTS-large</td>
+                    <td>60.0</td>
+                    <td>45.9</td>
+                    <td>31.2</td>
+                    <td>45.7</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
                     <td style="text-align: left;">Parler-TTS-mini</td>
                     <td>63.4</td>
                     <td>48.7</td>
                     <td>28.6</td>
                     <td>46.9</td>
                     <td>0.716 &pm; 0.119</td>
-                    <td>2.714 &pm; 0.128</td>
-                    <td>2.670 &pm; 0.134</td>
+                    <td>2.911 &pm; 0.123</td>
+                    <td>2.813 &pm; 0.124</td>
                     <td>11.1</td>
                 </tr>
                 <tr>
@@ -243,8 +276,8 @@
                     <td>39.3</td>
                     <td>50.4</td>
                     <td>0.740 &pm; 0.118</td>
-                    <td>3.260 &pm; 0.108</td>
-                    <td>3.159 &pm; 0.124</td>
+                    <td>3.387 &pm; 0.103</td>
+                    <td>3.223 &pm; 0.110</td>
                     <td>24.0</td>
                 </tr>
                 <tr class="ours">
@@ -254,14 +287,14 @@
                     <td><strong>59.6</strong></td>
                     <td><strong>70.5</strong></td>
                     <td><strong>0.852 &pm; 0.074</strong></td>
-                    <td><strong>3.686 &pm; 0.089</strong></td>
-                    <td><strong>3.407 &pm; 0.117</strong></td>
+                    <td><strong>3.833 &pm; 0.083</strong></td>
+                    <td><strong>3.494 &pm; 0.105</strong></td>
                     <td><strong>2.5</strong></td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- <p><strong>Perceptual and intelligibility evaluation.</strong> ChatterInstruct achieves the highest Q-MOS (3.647 &pm; 0.102) and I-MOS (3.331 &pm; 0.134), indicating superior naturalness and instruction adherence as judged by human raters. VoxInstruct obtains moderate perceptual scores (Q-MOS 3.297 &pm; 0.122, I-MOS 3.124 &pm; 0.143), while Parler-TTS-mini lags behind on both scales (Q-MOS 2.671 &pm; 0.146, I-MOS 2.682 &pm; 0.156). Intelligibility follows a similar trend: ChatterInstruct attains a WER of 2.5%, substantially lower than Parler-TTS-mini (11.1%) and VoxInstruct (24.0%), confirming that the frozen backbone preserves high-fidelity text rendering while the style pathway does not degrade articulation.</p> -->
+        <!-- <p><strong>Perceptual and intelligibility evaluation.</strong> ChatterInstruct achieves the highest Q-MOS (3.833 &pm; 0.083) and I-MOS (3.494 &pm; 0.105), indicating superior naturalness and instruction adherence as judged by human raters. VoxInstruct obtains moderate perceptual scores (Q-MOS 3.387 &pm; 0.103, I-MOS 3.223 &pm; 0.110), while Parler-TTS-mini lags behind on both scales (Q-MOS 2.911 &pm; 0.123, I-MOS 2.813 &pm; 0.124). Intelligibility follows a similar trend: ChatterInstruct attains a WER of 2.5%, substantially lower than Parler-TTS-mini (11.1%) and VoxInstruct (24.0%), confirming that the frozen backbone preserves high-fidelity text rendering while the style pathway does not degrade articulation.</p> -->
 
         <img src="images/new_task_img.png" alt="InstructTTSEval Results" class="architecture-img">
         <img src="images/q_mos_violin.png" alt="Q-MOS Results" class="architecture-img">
@@ -270,10 +303,10 @@
         <h3>2.2. Zero-Shot Speaker Generation (LibriTTS-R)</h3>
         <!-- <p>While the table above evaluates identity stability across diverse instruction formats, the following assesses
             absolute voice cloning fidelity on LibriTTS-R test-clean. ChatterInstruct attains the highest SECS of
-            <strong>0.7881</strong>, significantly exceeding ParlerTTS (0.7416) and VoxInstruct (0.7172) (<em>p</em>
+            <strong>0.788</strong>, significantly exceeding Parler-TTS-mini (0.742) and VoxInstruct (0.717) (<em>p</em>
             &ll; 0.01, Wilcoxon signed-rank test), validating the CFM Mapper's ability to map disentangled identity cues
-            to speaker latents. Intra-speaker consistency reaches <strong>0.8937 &pm; 0.0385</strong> (41% lower std.
-            dev. than ParlerTTS at 0.8084 &pm; 0.0651), confirming robust zero-shot stability.</p> -->
+            to speaker latents. Intra-speaker consistency reaches <strong>0.894 &pm; 0.039</strong> (40% lower std.
+            dev. than Parler-TTS-mini at 0.808 &pm; 0.065), confirming robust zero-shot stability.</p> -->
 
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
             <div style="flex: 1; min-width: 300px; text-align: center;">
@@ -281,7 +314,7 @@
                     style="margin: 0; max-height: 400px; object-fit: contain;">
                 <p style="margin-top: 10px; font-size: 0.9em; color: #555;"><strong>Figure 2a: Zero-Shot Speaker
                         Similarity (SECS).</strong> ChatterInstruct achieves the highest SECS of
-                    <strong>0.7881</strong>, surpassing ParlerTTS (0.7416) and VoxInstruct (0.7172). This metric
+                    <strong>0.788</strong>, surpassing Parler-TTS-mini (0.742) and VoxInstruct (0.717). This metric
                     measures the cosine similarity between WavLM-Base-Plus embeddings of generated audio and
                     ground-truth utterances, validating the Flow Matching Mapper's effectiveness in mapping disentangled
                     identity cues to accurate speaker latents.
@@ -292,8 +325,8 @@
                     style="margin: 0; max-height: 400px; object-fit: contain;">
                 <p style="margin-top: 10px; font-size: 0.9em; color: #555;"><strong>Figure 2b: Speaker Generation
                         Stability.</strong> ChatterInstruct demonstrates superior intra-speaker consistency, reaching
-                    <strong>0.8937 ± 0.0385</strong>. This represents a <strong>41% reduction in standard
-                        deviation</strong> compared to ParlerTTS (0.8084 ± 0.0651), confirming robust zero-shot
+                    <strong>0.894 &pm; 0.039</strong>. This represents a <strong>40% reduction in standard
+                        deviation</strong> compared to Parler-TTS-mini (0.808 &pm; 0.065), confirming robust zero-shot
                     stability and consistent speaker identity across multiple generations without needing reference
                     audio.
                 </p>
